@@ -1,185 +1,152 @@
+  
 const { ApolloServer, gql } = require('apollo-server')
+const axios = require('axios')
 const { v4: uuid } = require('uuid')
 
-let authors = [
+let episode = [
   {
-    name: 'Juanito Perez',
-    id: 'afa51ab0-344d-11e9-a414-719c6709cf31',
-    born: 2012,
+    id: 1,
+    name: "Pilot",
+    air_date: "December 2, 2013",
+    episode: "S01E01",
   },
   {
-    name: 'Robert Martin',
-    id: 'afa51ab0-344d-11e9-a414-719c6709cf32',
-    born: 1952,
+    id: 2,
+    name: 'Lawnmower Dog',
+    air_date: "December 9, 2013",
+    episode: "S01E02",
   },
   {
-    name: 'Martin Fowler',
-    id: 'afa5b6f0-344d-11e9-a414-719c6709cf33',
-    born: 1963,
-  },
-  {
-    name: 'Fyodor Dostoevsky',
-    id: 'afa5b6f1-344d-11e9-a414-719c6709cf34',
-    born: 1821,
-  },
-  {
-    name: 'Joshua Kerievsky', // birthyear not known
-    id: 'afa5b6f2-344d-11e9-a414-719c6709cf35',
-  },
-  {
-    name: 'Sandi Metz', // birthyear not known
-    id: 'afa5b6f3-344d-11e9-a414-719c6709cf36',
+    id: 3,
+    name: "Anatomy Park",
+    air_date: "December 16, 2013",
+    episode: "S01E03",
   },
 ]
 
-let books = [
+let character = [
   {
-    title: 'Clean Code',
-    published: 2008,
-    author: 'Robert Martin',
-    id: 'afa5b6f4-344d-11e9-a414-719c6709cf3e',
-    genres: ['refactoring'],
+    id: 1,
+    name: "Rick Sanchez",
+    status: "Alive",
+    species: "Human",
+    type: "",
+    gender: "Male",
   },
   {
-    title: 'Agile software development',
-    published: 2002,
-    author: 'Robert Martin',
-    id: 'afa5b6f5-344d-11e9-a414-719c6709cf3e',
-    genres: ['Agile', 'patterns', 'design'],
+    id: 2,
+    name: "Morty Smith",
+    status: "Alive",
+    species: "Human",
+    type: "",
+    gender: "Male",
   },
   {
-    title: 'Refactoring, edition 2',
-    published: 2018,
-    author: 'Martin Fowler',
-    id: 'afa5de00-344d-11e9-a414-719c6709cf3e',
-    genres: ['refactoring'],
-  },
-  {
-    title: 'Refactoring to patterns',
-    published: 2008,
-    author: 'Joshua Kerievsky',
-    id: 'afa5de01-344d-11e9-a414-719c6709cf3e',
-    genres: ['refactoring', 'patterns'],
-  },
-  {
-    title: 'Practical Object-Oriented Design, An Agile Primer Using Ruby',
-    published: 2012,
-    author: 'Sandi Metz',
-    id: 'afa5de02-344d-11e9-a414-719c6709cf3e',
-    genres: ['refactoring', 'design'],
-  },
-  {
-    title: 'Crime and punishment',
-    published: 1866,
-    author: 'Fyodor Dostoevsky',
-    id: 'afa5de03-344d-11e9-a414-719c6709cf3e',
-    genres: ['classic', 'crime'],
-  },
-  {
-    title: 'The Demon',
-    published: 1872,
-    author: 'Fyodor Dostoevsky',
-    id: 'afa5de04-344d-11e9-a414-719c6709cf3e',
-    genres: ['classic', 'Revolution'],
+    id: 3,
+    name: "Summer Smith",
+    status: "Alive",
+    species: "Human",
+    type: "",
+    gender: "Female",
   },
 ]
 
 const typeDefs = gql`
-  enum YES_NO {
-    YES
-    NO
+  enum GENDER {
+    Male
+    Female
   }
-  type Book {
-    title: String!
-    published: Int!
-    author: String!
-    genres: [String!]!
+  type episode {
+    name: String!
+    air_date: Int
+    episode: String!
     id: ID!
   }
-  type Author {
+  type character {
     name: String!
     id: ID!
-    born: Int
-    bookCount: Int
+    status: String!
+    species: String!
+    type: String!
+    gender: String!
+    apisodeCount: Int
   }
   type Mutation {
-    "Agrega un nuevo libro"
-    addBook(
-      title: String!
-      author: String!
-      published: Int!
-      genres: [String!]!
-    ): Book
-    editAuthor(name: String, setBornTo: Int): Author
+    "Agrega un nuevo episodio"
+    addepisode(
+      name: String!
+      air_date: String!
+      episode: String!
+    ): episode
+    editcharacter(name: String, gender: String): character
   }
   type Query {
-    allBooks(author: String, genre: String): [Book!]!
-    allAuthors(from2000: YES_NO): [Author!]!
-    bookCount: Int!
-    authorCount: Int!
+    allepisodes(name: String, air_date: Int): [episode!]!
+    allcharacters(gender: String): [character!]!
+    apisodeCount: Int!
   }
 `
 
 const resolvers = {
   Query: {
-    allBooks: (root, args) => {
-      if (!args.author && !args.genre) {
-        return books
+    allepisodes: (root, args) => {
+      if (!args.name && !args.episode) {
+        return episode
       }
 
-      if (args.author)
-        books = books.filter((book) => book.author === args.author)
+      if (args.name)
+        episode = episodes.filter((episode) => episode.name === args.name)
 
-      if (args.genre) {
-        return books.filter(
-          (book) => book.genres.findIndex((genre) => genre == args.genre) !== -1
+      if (args.air_date) {
+        return episode.filter(
+          (episode) => episode.air_date.findIndex((air_date) => air_date == args.air_date) !== -1
         )
       }
     },
-    allAuthors: (root, args) => {
-      const res = authors.map((author) => {
-        const bookCount = books.reduce(
-          (a, book) => (book.author == author.name ? a + 1 : a),
+    allcharacters: (root, args) => {
+      const res = characters.map((character) => {
+        const episodeCount = episodes.reduce(
+          (a, episode) => (episode.character == character.name ? a + 1 : a),
           0
         )
-        return { ...author, bookCount }
+        return { ...character, episodeCount }
       })
-      if (args.from2000) return res.filter(author => {
-        if (args.from2000 === 'YES' && author.born >=2000) return true
-        if (args.from2000 === 'NO' && author.born < 2000) return true
+      if (args.gender) return res.filter(character => {
+        if (args.gender == "Male" ) return true
+        if (args.gender == "Female") return true
       })
       return res
     },
 
-    bookCount: () => books.length,
-    authorCount: () => authors.length,
+    episodeCount: () => episodes.length,
+    characterCount: () => characters.length,
   },
   Mutation: {
-    addBook: (root, args) => {
-      if (!authors.find((author) => author.name === args.author)) {
-        const newAuthor = {
-          name: args.author,
+    addepisode: (root, args) => {
+      if (!character.find((character) => character.name === args.character)) {
+        const newcharacter = {
+          name: args.character,
           id: uuid(),
         }
-        authors = authors.concat(newAuthor)
+        characters = characters.concat(newcharacter)
       }
 
-      const book = { ...args, id: uuid() }
-      books = books.concat(book)
-      return book
+      const episode = { ...args, id: uuid() }
+      episodes = episodes.concat(episode)
+      return episode
     },
 
-    editAuthor: (root, args) => {
-      const author = authors.find((a) => a.name === args.name)
-      console.log(author)
-      if (!author) {
+    editcharacter: (root, args) => {
+      const character = characters.find((a) => a.name === args.name)
+      console.log(character)
+      if (!character) {
         return null
       }
-      const updatedAuthor = { ...author, born: args.setBornTo }
-      authors = authors.map((author) =>
-        author.name === updatedAuthor.name ? updatedAuthor : author
+      const updatedcharacter = { ...character, gender: args.setgenderTo }
+      characters = characters.map((character) =>
+        character.name === updatedcharacter.name ? updatedcharacter : character
       )
-      return updatedAuthor
+      return updatedcharacter
     },
   },
 }
